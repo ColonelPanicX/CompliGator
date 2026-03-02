@@ -102,7 +102,7 @@ def _run_sync(svc, output_dir: Path, state) -> None:
 
 
 def _run_normalize(source_dir: Path, output_dir: Path) -> None:
-    from compligator.normalizer import normalize_all
+    from core.normalizer import normalize_all
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -149,8 +149,8 @@ def main() -> None:
     _check_dependencies()
 
     # Lazy imports — only reached if dependencies are present
-    from compligator.downloaders import SERVICES
-    from compligator.state import StateFile
+    from core.downloaders import SERVICES
+    from core.state import StateFile
 
     source_dir = Path("source-content")
     normalized_dir = Path("normalized-content")

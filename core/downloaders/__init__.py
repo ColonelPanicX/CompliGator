@@ -25,7 +25,7 @@ from . import (
 from .base import DownloadResult
 
 if TYPE_CHECKING:
-    from compligator.state import StateFile
+    from core.state import StateFile
 
 
 @dataclass(frozen=True)

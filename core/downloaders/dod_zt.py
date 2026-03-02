@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING, Optional
 import requests
 
 if TYPE_CHECKING:
-    from compligator.state import StateFile
+    from core.state import StateFile
 
 from .base import DownloadResult, download_file
 

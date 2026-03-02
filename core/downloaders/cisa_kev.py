@@ -1,12 +1,8 @@
-"""HIPAA Security Rule downloader.
+"""CISA Known Exploited Vulnerabilities (KEV) downloader.
 
-Downloads the HIPAA Security Rule as originally published in the Federal
-Register (68 Fed. Reg. 8333, 2003-02-20) from govinfo.gov, the official
-U.S. government online bookstore and authoritative public record source.
-
-The HHS.gov guidance pages that previously hosted this content return 403
-for automated requests (site redesign — paths are stale). The govinfo.gov
-version is the authoritative source for the rule as enacted.
+Downloads the CISA KEV catalog directly from cisa.gov. Both the JSON
+feed and the CSV export are fetched. These files are small and updated
+continuously — a natural candidate for quick-scan mode.
 """
 
 from __future__ import annotations
@@ -17,20 +13,21 @@ from typing import TYPE_CHECKING, Optional
 import requests
 
 if TYPE_CHECKING:
-    from compligator.state import StateFile
+    from core.state import StateFile
 
 from .base import DownloadResult, download_file
 
-SOURCE_URL = "https://www.govinfo.gov/content/pkg/FR-2003-02-20/pdf/03-3877.pdf"
-
-# Date these URLs were last manually verified.
-KNOWN_DOCS_VERIFIED = "2026-03-01"
+SOURCE_URL = "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
 
 # (filename, url)
 KNOWN_DOCS: list[tuple[str, str]] = [
     (
-        "hipaa-security-rule-fr-2003-02-20.pdf",
-        "https://www.govinfo.gov/content/pkg/FR-2003-02-20/pdf/03-3877.pdf",
+        "known_exploited_vulnerabilities.json",
+        "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+    ),
+    (
+        "known_exploited_vulnerabilities.csv",
+        "https://www.cisa.gov/sites/default/files/csv/known_exploited_vulnerabilities.csv",
     ),
 ]
 
@@ -41,13 +38,8 @@ def run(
     force: bool = False,
     state: Optional["StateFile"] = None,
 ) -> DownloadResult:
-    dest = output_dir / "hipaa"
-    result = DownloadResult(framework="hipaa")
-
-    result.notices.append(
-        "HIPAA source is the Federal Register original rule (govinfo.gov). "
-        "The HHS.gov guidance pages return 403 for automated requests."
-    )
+    dest = output_dir / "cisa-kev"
+    result = DownloadResult(framework="cisa-kev")
 
     if dry_run:
         for filename, _url in KNOWN_DOCS:

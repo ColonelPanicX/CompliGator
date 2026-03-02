@@ -167,7 +167,7 @@ if not _in_managed_venv():
 
 # Running inside .compligator-venv — all deps are present
 sys.path.insert(0, str(SCRIPT_DIR))
-from compligator.cli import main  # noqa: E402
+from core.cli import main  # noqa: E402
 
 if __name__ == "__main__":
     main()
