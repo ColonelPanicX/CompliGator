@@ -7,11 +7,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Optional
 
 from . import (
+    cis_controls,
     cisa_bod,
     cisa_kev,
     cisa_zt,
     cjis,
     cmmc,
+    cnss,
     csa_ccm,
     dfars_far,
     disa,
@@ -19,14 +21,17 @@ from . import (
     executive_orders,
     fedramp,
     fedramp_github,
+    ftc_safeguards,
     govramp,
     hipaa,
     mitre_attack,
+    nispom,
     nist,
     nist_oscal,
     nsa,
     omb,
     owasp_asvs,
+    pci_dss,
 )
 from .base import DownloadResult
 
@@ -76,6 +81,18 @@ SERVICES: list[ServiceDef] = [
     ServiceDef("dfars-far", "DFARS / FAR Cybersecurity Clauses", dfars_far.run, "dfars-far"),
     ServiceDef("nsa", "NSA Cybersecurity Advisories", nsa.run, "nsa"),
     ServiceDef("mitre-attack", "MITRE ATT&CK (STIX 2.1)", mitre_attack.run, "mitre-attack"),
+    ServiceDef(
+        "ftc-safeguards",
+        "FTC Safeguards Rule (16 CFR Part 314)",
+        ftc_safeguards.run,
+        "ftc-safeguards",
+    ),
+    ServiceDef("cnss", "CNSS Instructions & Policies", cnss.run, "cnss"),
+    ServiceDef("pci-dss", "PCI DSS v4.0.1", pci_dss.run, "pci-dss"),
+    ServiceDef("nispom", "DCSA NISPOM (32 CFR Part 117)", nispom.run, "nispom"),
+    ServiceDef(
+        "cis-controls", "CIS Controls v8 (Structured Data)", cis_controls.run, "cis-controls"
+    ),
 ]
 
 SERVICES_BY_KEY: dict[str, ServiceDef] = {s.key: s for s in SERVICES}

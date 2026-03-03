@@ -23,11 +23,15 @@ from .base import DownloadResult, download_file
 SOURCE_URL = "https://www.whitehouse.gov/omb/information-resources/guidance/memoranda/"
 
 # Date these URLs were last manually verified against the OMB memo index.
-KNOWN_DOCS_VERIFIED = "2026-03-01"
+KNOWN_DOCS_VERIFIED = "2026-03-03"
 
 # (filename, url)
 # Filenames use the memo identifier for predictability.
 KNOWN_DOCS: list[tuple[str, str]] = [
+    (
+        "OMB-Circular-A-130-Managing-Information-as-a-Strategic-Resource.pdf",
+        "https://www.whitehouse.gov/wp-content/uploads/legacy_drupal_files/omb/circulars/A130/a130revised.pdf",
+    ),
     (
         "M-21-31.pdf",
         "https://www.whitehouse.gov/wp-content/uploads/2021/08/M-21-31-Improving-the-Federal-Governments-Investigative-and-Remediation-Capabilities-Related-to-Cybersecurity-Incidents.pdf",

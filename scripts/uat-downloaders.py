@@ -49,6 +49,7 @@ DRY_RUN_KEYS: set[str] = {
 TIER_KEYS: dict[int, set[str]] = {
     1: {"cisa-zt", "cisa-kev", "hipaa", "cjis", "owasp-asvs", "omb", "dod-zt"},
     2: {"govramp", "csa-ccm", "executive-orders", "dfars-far", "nsa", "mitre-attack"},
+    3: {"ftc-safeguards", "cnss", "pci-dss", "nispom", "cis-controls"},
 }
 
 # Column widths
@@ -155,7 +156,7 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--tier", type=int, choices=[1, 2], help="Run all frameworks in a tier")
+    group.add_argument("--tier", type=int, choices=[1, 2, 3], help="Run all frameworks in a tier")
     group.add_argument("--keys", metavar="K1,K2", help="Comma-separated framework keys")
     group.add_argument("--all", action="store_true", dest="run_all", help="Run all frameworks")
     parser.add_argument(
@@ -192,8 +193,8 @@ def main() -> None:
         tier_set = TIER_KEYS.get(args.tier, set())
         keys = [s.key for s in SERVICES if s.key in tier_set]
     else:
-        # Default: Tier 2 (current work-in-progress)
-        tier_set = TIER_KEYS[2]
+        # Default: Tier 3 (current work-in-progress)
+        tier_set = TIER_KEYS[3]
         keys = [s.key for s in SERVICES if s.key in tier_set]
 
     if not keys:
