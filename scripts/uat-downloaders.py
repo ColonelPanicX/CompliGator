@@ -63,12 +63,12 @@ def _label(text: str, width: int) -> str:
     return text[:width - 2] + ".." if len(text) > width else text
 
 
-def _result(downloaded: int, skipped: int, errors: int) -> str:
+def _result(downloaded: int, skipped: int, errors: int, manual: int) -> str:
     if errors > 0 and downloaded == 0 and skipped == 0:
         return "FAIL"
     if errors > 0:
         return "WARN"
-    if downloaded == 0 and skipped == 0:
+    if downloaded == 0 and skipped == 0 and manual == 0:
         return "FAIL"
     return "PASS"
 
@@ -116,7 +116,8 @@ def run_uat(keys: list[str], output_dir: Path) -> int:
         dl  = len(result.downloaded)
         sk  = len(result.skipped)
         err = len(result.errors)
-        verdict = _result(dl, sk, err)
+        man = len(result.manual_required)
+        verdict = _result(dl, sk, err, man)
 
         # Build notes: inline errors (first 2) + fallback notice flag
         notes: list[str] = []
@@ -130,7 +131,7 @@ def run_uat(keys: list[str], output_dir: Path) -> int:
                 notes.append("fallback (expected)")
                 break
 
-        files_col = f"{dl}/{sk}s" if sk else str(dl)
+        files_col = f"{dl}/{sk}s" if sk else (f"{man}m" if man and dl == 0 else str(dl))
         timing = f"{elapsed:.1f}s"
         notes_str = "; ".join(notes) if notes else timing
 
