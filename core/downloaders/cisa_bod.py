@@ -20,7 +20,7 @@ import requests
 from bs4 import BeautifulSoup
 
 if TYPE_CHECKING:
-    from compligator.state import StateFile
+    from core.state import StateFile
 
 from .base import (
     REQUEST_RETRIES,

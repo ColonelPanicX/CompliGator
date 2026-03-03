@@ -47,33 +47,68 @@ def _human_size(n: int) -> str:
     return f"{size:.1f} TB"
 
 
-def _print_menu(services, entries: dict) -> None:
+def _svc_info(svc, entries: dict) -> str:
+    """Return a short sync-status string for one service."""
+    prefix = svc.subdir + "/"
+    svc_entries = {k: v for k, v in entries.items() if k.startswith(prefix)}
+    if svc_entries:
+        count = len(svc_entries)
+        size  = _human_size(sum(e["size"] for e in svc_entries.values()))
+        last  = max(e["recorded_at"] for e in svc_entries.values())[:10]
+        return f"{count} files  {size}  last synced {last}"
+    return "never synced"
+
+
+def _group_info(group_svcs: list, entries: dict) -> str:
+    """Return a short sync-status string for a group of services."""
+    dates = []
+    for svc in group_svcs:
+        prefix = svc.subdir + "/"
+        svc_entries = {k: v for k, v in entries.items() if k.startswith(prefix)}
+        if svc_entries:
+            dates.append(max(e["recorded_at"] for e in svc_entries.values())[:10])
+    n = len(group_svcs)
+    noun = "framework" if n == 1 else "frameworks"
+    if dates:
+        return f"{n} {noun}  last synced {max(dates)}"
+    return f"{n} {noun}  never synced"
+
+
+def _print_group_menu(groups: list[str], services_by_group: dict, entries: dict) -> None:
     print()
     print("CompliGator")
     print("-" * 52)
+    for i, group in enumerate(groups, 1):
+        info = _group_info(services_by_group[group], entries)
+        print(f"  {i}. {group:<24} {info}")
 
-    for i, svc in enumerate(services, 1):
-        prefix = svc.subdir + "/"
-        svc_entries = {k: v for k, v in entries.items() if k.startswith(prefix)}
-
-        if svc_entries:
-            count = len(svc_entries)
-            size  = _human_size(sum(e["size"] for e in svc_entries.values()))
-            last  = max(e["recorded_at"] for e in svc_entries.values())[:10]
-            info  = f"{count} files  {size}  last synced {last}"
-        else:
-            info  = "never synced"
-
-        print(f"  {i}. {svc.label:<32} {info}")
-
-    sync_all_n = len(services) + 1
-    normalize_n = len(services) + 2
+    sync_all_n  = len(groups) + 1
+    normalize_n = len(groups) + 2
     print()
-    print(f"  {sync_all_n}. Sync All")
+    print(f"  {sync_all_n}. Sync All Frameworks")
     print(f"  {normalize_n}. Normalize Downloaded Documents")
     print("  0. Quit")
     print()
 
+
+def _print_framework_menu(group: str, svcs: list, entries: dict) -> None:
+    print()
+    print(group)
+    print("-" * 52)
+    for i, svc in enumerate(svcs, 1):
+        info = _svc_info(svc, entries)
+        print(f"  {i}. {svc.label:<36} {info}")
+
+    sync_group_n = len(svcs) + 1
+    print()
+    print(f"  {sync_group_n}. Sync All {group}")
+    print("  0. Back")
+    print()
+
+
+# ---------------------------------------------------------------------------
+# Sync / normalize actions
+# ---------------------------------------------------------------------------
 
 def _run_sync(svc, output_dir: Path, state) -> None:
     print(f"Syncing {svc.label}...", end="", flush=True)
@@ -102,7 +137,7 @@ def _run_sync(svc, output_dir: Path, state) -> None:
 
 
 def _run_normalize(source_dir: Path, output_dir: Path) -> None:
-    from compligator.normalizer import normalize_all
+    from core.normalizer import normalize_all
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -149,16 +184,19 @@ def main() -> None:
     _check_dependencies()
 
     # Lazy imports — only reached if dependencies are present
-    from compligator.downloaders import SERVICES
-    from compligator.state import StateFile
+    from core.downloaders import GROUPS, SERVICES, SERVICES_BY_GROUP
+    from core.state import StateFile
 
     source_dir = Path("source-content")
     normalized_dir = Path("normalized-content")
     source_dir.mkdir(parents=True, exist_ok=True)
     state = StateFile(source_dir)
 
+    sync_all_n  = len(GROUPS) + 1
+    normalize_n = len(GROUPS) + 2
+
     while True:
-        _print_menu(SERVICES, state.entries())
+        _print_group_menu(GROUPS, SERVICES_BY_GROUP, state.entries())
 
         try:
             choice = input("Select: ").strip()
@@ -175,15 +213,44 @@ def main() -> None:
             continue
 
         n = int(choice)
-        sync_all_n = len(SERVICES) + 1
-        normalize_n = len(SERVICES) + 2
 
-        if 1 <= n <= len(SERVICES):
-            _run_sync(SERVICES[n - 1], source_dir, state)
-        elif n == sync_all_n:
+        if n == sync_all_n:
             for svc in SERVICES:
                 _run_sync(svc, source_dir, state)
+
         elif n == normalize_n:
             _run_normalize(source_dir, normalized_dir)
+
+        elif 1 <= n <= len(GROUPS):
+            group = GROUPS[n - 1]
+            svcs  = SERVICES_BY_GROUP[group]
+
+            while True:
+                _print_framework_menu(group, svcs, state.entries())
+
+                try:
+                    sub = input("Select: ").strip()
+                except (KeyboardInterrupt, EOFError):
+                    print()
+                    break
+
+                if sub == "0":
+                    break
+
+                if not sub.isdigit():
+                    print("Invalid selection.")
+                    continue
+
+                m = int(sub)
+                sync_group_n = len(svcs) + 1
+
+                if 1 <= m <= len(svcs):
+                    _run_sync(svcs[m - 1], source_dir, state)
+                elif m == sync_group_n:
+                    for svc in svcs:
+                        _run_sync(svc, source_dir, state)
+                else:
+                    print("Invalid selection.")
+
         else:
             print("Invalid selection.")
