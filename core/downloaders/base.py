@@ -159,3 +159,60 @@ def playwright_download_file(
 
     except Exception as exc:  # noqa: BLE001
         return False, f"playwright download failed: {exc}"
+
+
+def playwright_navigate_file(
+    url: str,
+    dest: Path,
+    *,
+    force: bool = False,
+    state: Optional["StateFile"] = None,
+) -> tuple[bool, str]:
+    """Download a URL by navigating to it and capturing the response body directly.
+
+    Use this for sites that serve files inline (not as Content-Disposition: attachment)
+    but block plain HTTP requests. Unlike playwright_download_file(), this does NOT
+    wait for a download event — it captures the raw response bytes from the navigation
+    itself. Suitable for direct CDN file URLs (e.g. media.defense.gov).
+
+    Returns (success, message) with the same semantics as download_file().
+    """
+    if not force:
+        if state is not None:
+            if state.needs_adopt(dest):
+                state.adopt(dest, url)
+            if state.is_fresh(dest, url):
+                return True, "skipped"
+        elif dest.exists() and dest.stat().st_size > 0:
+            return True, "skipped"
+
+    require_playwright()
+    from playwright.sync_api import sync_playwright
+
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
+            ctx = browser.new_context(user_agent=USER_AGENT)
+            page = ctx.new_page()
+            response = page.goto(url, timeout=60_000, wait_until="load")
+            if response is None:
+                browser.close()
+                return False, "no response received"
+            if response.status != 200:
+                browser.close()
+                return False, f"HTTP {response.status}"
+            content = response.body()
+            browser.close()
+
+        if not content:
+            return False, "empty response body"
+
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(content)
+
+        if state is not None:
+            state.record(dest, url)
+        return True, "downloaded"
+
+    except Exception as exc:  # noqa: BLE001
+        return False, f"playwright navigation failed: {exc}"

@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 from .base import (
     DownloadResult,
-    playwright_download_file,
+    playwright_navigate_file,
 )
 
 SOURCE_URL = "https://www.nsa.gov/Press-Room/Cybersecurity-Advisories-Guidance/"
@@ -100,7 +100,7 @@ def run(
 
     for filename, url in KNOWN_DOCS:
         target = dest / filename
-        ok, msg = playwright_download_file(url, target, force=force, state=state)
+        ok, msg = playwright_navigate_file(url, target, force=force, state=state)
         if msg == "skipped":
             result.skipped.append(filename)
         elif ok:
