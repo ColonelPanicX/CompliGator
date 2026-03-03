@@ -1,3 +1,6 @@
+# ── Test output (UAT runner downloads — local only) ───────────────────────────
+test-output/
+
 # ── Data directories (local only — not for distribution) ──────────────────────
 # Downloaded content is never committed; placeholder READMEs for paywalled
 # frameworks are the exception — they are tracked via the negation rules below.
