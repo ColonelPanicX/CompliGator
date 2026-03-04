@@ -88,7 +88,7 @@ def _print_group_menu(groups: list[str], services_by_group: dict, entries: dict)
         print(f"  {i}. {group:<24} {info}")
     print()
     print(_BAR)
-    print("  s = sync all  |  n = normalize all  |  q = quit")
+    print("  s = sync all  |  n = normalize all  |  c = check for updates  |  q = quit")
     print(_BAR)
     print()
 
@@ -188,6 +188,50 @@ def _run_normalize(source_dir: Path, output_dir: Path, services=None, label: str
 
 
 # ---------------------------------------------------------------------------
+# Quick scan
+# ---------------------------------------------------------------------------
+
+QUICK_SCAN_KEYS = ["cisa-kev", "fedramp-github", "nsa", "owasp-asvs"]
+
+
+def _run_scan(source_dir: Path, state) -> None:
+    from core.downloaders import SERVICES_BY_KEY
+
+    print("Quick scan — checking for updates...")
+    print()
+    entries = state.entries()
+
+    for key in QUICK_SCAN_KEYS:
+        svc = SERVICES_BY_KEY[key]
+        prefix = svc.subdir + "/"
+        svc_entries = {k: v for k, v in entries.items() if k.startswith(prefix)}
+        last = max(e["recorded_at"] for e in svc_entries.values())[:10] if svc_entries else None
+
+        label = svc.label
+        print(f"  Checking {label}...", end="", flush=True)
+        try:
+            result = svc.runner(source_dir, dry_run=True, force=False, state=state)
+        except Exception as exc:  # noqa: BLE001
+            print(f"\r  {label:<40} unable to check  ({exc})")
+            continue
+
+        if result.manual_required:
+            status = f"{len(result.manual_required)} docs require manual download"
+        elif result.downloaded:
+            status = f"{len(result.downloaded)} update(s) available"
+        else:
+            n = len(result.skipped)
+            status = f"up to date  ({n} file{'s' if n != 1 else ''})"
+
+        synced = f"  last synced {last}" if last else "  never synced"
+        print(f"\r  {label:<40} {status}{synced}")
+
+    print()
+    print("  Note: NIST Drafts excluded from quick scan (requires full crawl — use Sync to update).")  # noqa: E501
+    print()
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
@@ -222,6 +266,9 @@ def main() -> None:
 
         elif choice == "n":
             _run_normalize(source_dir, normalized_dir)
+
+        elif choice == "c":
+            _run_scan(source_dir, state)
 
         elif choice.isdigit() and 1 <= int(choice) <= len(GROUPS):
             group = GROUPS[int(choice) - 1]
