@@ -35,8 +35,11 @@ from .base import (
 SOURCE_URL = "https://www.cisa.gov/directives"
 BASE_URL = "https://www.cisa.gov"
 
-# URL path prefix that all ED detail pages share
-ED_PATH_PREFIX = "/news-events/directives/emergency-directive-"
+# URL path prefixes that cover ED detail pages and supplemental directions
+ED_PATH_PREFIXES = (
+    "/news-events/directives/ed-",
+    "/news-events/directives/supplemental-direction-ed-",
+)
 
 # ---------------------------------------------------------------------------
 # Curated fallback URL list
@@ -100,7 +103,7 @@ def _parse_ed_links(html: str) -> list[tuple[str, str]]:
             continue
         full_url = urljoin(BASE_URL, href)
         path = urlparse(full_url).path
-        if not path.startswith(ED_PATH_PREFIX):
+        if not any(path.startswith(p) for p in ED_PATH_PREFIXES):
             continue
         if full_url in seen:
             continue
