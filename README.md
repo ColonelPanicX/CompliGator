@@ -6,7 +6,7 @@ A self-contained Python tool for downloading, syncing, and normalizing complianc
 
 ## Supported Frameworks
 
-26 frameworks across 5 groups:
+27 frameworks across 5 groups:
 
 **NIST**
 | Framework | Source |
@@ -26,6 +26,7 @@ A self-contained Python tool for downloading, syncing, and normalizing complianc
 | Framework | Source |
 |---|---|
 | CISA Binding Operational Directives | cisa.gov |
+| CISA Emergency Directives | cisa.gov |
 | CISA Zero Trust Maturity Model | cisa.gov |
 | CISA Known Exploited Vulnerabilities | cisa.gov |
 

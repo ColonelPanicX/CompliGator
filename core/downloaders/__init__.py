@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Callable, Optional
 from . import (
     cis_controls,
     cisa_bod,
+    cisa_ed,
     cisa_kev,
     cisa_zt,
     cjis,
@@ -81,6 +82,10 @@ SERVICES: list[ServiceDef] = [
     ServiceDef(
         "cisa-bod", "CISA Binding Operational Directives",
         cisa_bod.run, "cisa-bod", "CISA",
+    ),
+    ServiceDef(
+        "cisa-ed", "CISA Emergency Directives",
+        cisa_ed.run, "cisa-ed", "CISA",
     ),
     ServiceDef("cisa-zt", "CISA Zero Trust Maturity Model", cisa_zt.run, "cisa-zt", "CISA"),
     ServiceDef(
