@@ -209,11 +209,18 @@ def _requests_download(
     force: bool,
     state: Optional["StateFile"] = None,
 ) -> DownloadResult:
-    """Download files via plain HTTP requests."""
+    """Download files via plain HTTP requests.
+
+    dodcio.defense.gov is known to block server/cloud IPs at the network level —
+    those URLs are marked manual_required immediately without attempting a download.
+    """
     result = DownloadResult(framework="cmmc")
     session = requests.Session()
 
     for _section, filename, url in links:
+        if "dodcio.defense.gov" in url:
+            result.manual_required.append((filename, url))
+            continue
         target = dest / filename
         ok, msg = download_file(session, url, target, force=force, referer=SOURCE_URL, state=state)
         if msg == "skipped":
@@ -258,9 +265,11 @@ def run(
                 result.downloaded.append(filename)
         if used_known_urls:
             result.notices.append(
-                f"Automated download unavailable — DoD portal blocked access. "
-                f"Used last-known-good URL list (last verified {KNOWN_URLS_VERIFIED}). "
-                f"See source-content/cmmc/_known-urls.txt for the full URL list."
+                f"Automated download unavailable — dodcio.defense.gov blocks server/cloud IPs "
+                f"at the network level (HTTP 403 regardless of tool or headers). "
+                f"Download manually from a browser on a local machine. "
+                f"URLs last verified {KNOWN_URLS_VERIFIED}; "
+                f"see source-content/cmmc/_known-urls.txt for the full list."
             )
         return result
 
@@ -269,8 +278,10 @@ def run(
     result = _requests_download(links, dest, force, state)
     if used_known_urls:
         result.notices.append(
-            f"Automated download unavailable — DoD portal blocked access. "
-            f"Used last-known-good URL list (last verified {KNOWN_URLS_VERIFIED}). "
-            f"See source-content/cmmc/_known-urls.txt for the full URL list."
+            f"Automated download unavailable — dodcio.defense.gov blocks server/cloud IPs "
+            f"at the network level (HTTP 403 regardless of tool or headers). "
+            f"Download manually from a browser on a local machine. "
+            f"URLs last verified {KNOWN_URLS_VERIFIED}; "
+            f"see source-content/cmmc/_known-urls.txt for the full list."
         )
     return result
