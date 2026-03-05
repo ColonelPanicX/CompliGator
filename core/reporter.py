@@ -34,8 +34,8 @@ def _status_rows(result: DownloadResult) -> list[tuple[str, str]]:
         rows.append((name, "Available"))
     for name in result.skipped:
         rows.append((name, "Available"))
-    for name, _ in result.errors:
-        rows.append((name, "Missing"))
+    for err in result.errors:
+        rows.append((err[0], "Missing"))
     for name, _ in result.manual_required:
         rows.append((name, "Missing"))
     return rows
