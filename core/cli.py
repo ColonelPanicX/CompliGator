@@ -125,10 +125,7 @@ def _run_sync(svc, output_dir: Path, state):
             for e in result.errors:
                 print(f"    {e[0]}: {e[1]}")
         if result.manual_required:
-            print("  Manual download required:")
-            for label, url in result.manual_required:
-                print(f"    {label}")
-                print(f"    {url}")
+            print(f"  Manual required: {len(result.manual_required)} (see sync report for URLs)")
         if result.notices:
             print()
             for notice in result.notices:
