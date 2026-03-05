@@ -17,6 +17,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import shutil
+import subprocess
+import tempfile
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -160,6 +164,29 @@ except ImportError:
     print("  Playwright not installed — skipping")
 except Exception as exc:
     print(f"  ERROR: {exc}")
+
+
+# ---------------------------------------------------------------------------
+# Step 6: Direct PDF downloads — curl subprocess
+# ---------------------------------------------------------------------------
+
+section("STEP 6: Direct PDF downloads — curl subprocess")
+if not shutil.which("curl"):
+    print("  curl not found on PATH — skipping")
+else:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        for url in SAMPLE_PDF_URLS:
+            dest = Path(tmpdir) / Path(url).name
+            try:
+                result = subprocess.run(
+                    ["curl", "-L", "-s", "-w", "%{http_code}", "-o", str(dest), url],
+                    capture_output=True, text=True, timeout=30,
+                )
+                http_code = result.stdout.strip()
+                size = dest.stat().st_size if dest.exists() else 0
+                print(f"  HTTP {http_code}  {size:,} bytes  {url}")
+            except Exception as exc:
+                print(f"  ERROR  {url}  ({exc})")
 
 print(f"\n{SEP}")
 print("  Diagnostic complete.")
