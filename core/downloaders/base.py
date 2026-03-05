@@ -29,7 +29,7 @@ class DownloadResult:
     framework: str
     downloaded: list[str] = field(default_factory=list)
     skipped: list[str] = field(default_factory=list)
-    errors: list[tuple[str, str]] = field(default_factory=list)
+    errors: list[tuple] = field(default_factory=list)  # (name, msg) or (name, msg, url)
     manual_required: list[tuple[str, str]] = field(default_factory=list)
     notices: list[str] = field(default_factory=list)
 

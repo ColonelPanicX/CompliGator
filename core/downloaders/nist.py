@@ -247,21 +247,22 @@ def _run(
 
     base_dir.mkdir(parents=True, exist_ok=True)
 
-    def _dl(item: tuple[str, str]) -> tuple[str, bool, str]:
+    def _dl(item: tuple[str, str]) -> tuple[str, bool, str, str]:
         detail_url, download_url = item
         ser, _num = _extract_series_number(detail_url, series_type)
-        return _download_pub(
+        filename, ok, msg = _download_pub(
             session, detail_url, download_url, base_dir, ser, series_type, force, state
         )
+        return filename, ok, msg, download_url
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=DOWNLOAD_WORKERS) as ex:
-        for filename, ok, msg in ex.map(_dl, downloadable):
+        for filename, ok, msg, url in ex.map(_dl, downloadable):
             if msg == "skipped":
                 result.skipped.append(filename)
             elif ok:
                 result.downloaded.append(filename)
             else:
-                result.errors.append((filename, msg))
+                result.errors.append((filename, msg, url))
 
     return result
 

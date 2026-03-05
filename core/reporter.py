@@ -104,8 +104,11 @@ def build_report(
                     "",
                 ]
             md += ["| Document | Source |", "| --- | --- |"]
-            for name, msg in result.errors:
-                md.append(f"| {name} | Error: {msg} |")
+            for err in result.errors:
+                name, msg = err[0], err[1]
+                url = err[2] if len(err) > 2 else ""
+                source = f"[{url}]({url})" if url else f"Error: {msg}"
+                md.append(f"| {name} | {source} |")
             for name, url in result.manual_required:
                 md.append(f"| {name} | {url if url else 'manually supplied'} |")
             md.append("")
