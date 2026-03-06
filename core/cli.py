@@ -35,10 +35,56 @@ def _check_dependencies() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Display helpers
+# Visual helpers
 # ---------------------------------------------------------------------------
 
-_BAR = "─" * 70
+WIDTH = 70
+_BAR = "─" * WIDTH
+
+
+def _visual_len(s: str) -> int:
+    """Return terminal column width, counting emoji/wide chars as 2 columns."""
+    count = 0
+    for ch in s:
+        cp = ord(ch)
+        if 0xFE00 <= cp <= 0xFE0F or cp == 0x200D:
+            continue
+        if cp >= 0x2600 and not (0x2500 <= cp <= 0x257F):
+            count += 2
+        else:
+            count += 1
+    return count
+
+
+def _print_box(title: str) -> None:
+    """Print a centred title inside a ╔═══╗ box."""
+    print("╔" + "═" * (WIDTH - 2) + "╗")
+    inner = WIDTH - 2
+    padding = (inner - len(title)) // 2
+    right = inner - padding - len(title)
+    print("║" + " " * padding + title + " " * right + "║")
+    print("╚" + "═" * (WIDTH - 2) + "╝")
+
+
+def _print_section(title: str) -> None:
+    """Print a ─── section divider with a label."""
+    print()
+    print(_BAR)
+    print(title)
+    print(_BAR)
+
+
+def _status_icon(entries: dict, svc) -> str:
+    """Return a status icon for a service based on its sync state."""
+    prefix = svc.subdir + "/"
+    if any(k.startswith(prefix) for k in entries):
+        return "[x]"
+    return "[ ]"
+
+
+# ---------------------------------------------------------------------------
+# Display helpers
+# ---------------------------------------------------------------------------
 
 
 def _human_size(n: int) -> str:
@@ -80,12 +126,15 @@ def _group_info(group_svcs: list, entries: dict) -> str:
 
 
 def _print_group_menu(groups: list[str], services_by_group: dict, entries: dict) -> None:
+    _print_box("COMPLIGATOR")
     print()
-    print("CompliGator")
-    print("-" * 52)
+    print(_BAR)
+    print("MAIN MENU")
+    print(_BAR)
+    print(f"  {'[0]':<6} Configure")
     for i, group in enumerate(groups, 1):
         info = _group_info(services_by_group[group], entries)
-        print(f"  {i}. {group:<24} {info}")
+        print(f"  [{i}]{'':3} {group:<24} {info}")
     print()
     print(_BAR)
     print("  s = sync all  |  n = normalize all  |  c = check for updates  |  q = quit")
@@ -95,11 +144,13 @@ def _print_group_menu(groups: list[str], services_by_group: dict, entries: dict)
 
 def _print_framework_menu(group: str, svcs: list, entries: dict, state) -> None:
     print()
+    print(_BAR)
     print(group)
-    print("-" * 52)
+    print(_BAR)
     for i, svc in enumerate(svcs, 1):
+        icon = _status_icon(entries, svc)
         info = _svc_info(svc, entries, state)
-        print(f"  {i}. {svc.label:<36} {info}")
+        print(f"  {icon} [{i}]  {svc.label:<36} {info}")
     print()
     print(_BAR)
     print("  s = sync all  |  n = normalize  |  b = back  |  x = main menu  |  q = quit")
@@ -112,34 +163,44 @@ def _print_framework_menu(group: str, svcs: list, entries: dict, state) -> None:
 # ---------------------------------------------------------------------------
 
 def _run_sync(svc, output_dir: Path, state):
-    print(f"Syncing {svc.label}...", end="", flush=True)
+    print(f"  Syncing {svc.label}...", end="", flush=True)
     try:
         result = svc.runner(output_dir, dry_run=False, force=False, state=state)
-        print(" done.")
-        if result.downloaded:
-            print(f"  Downloaded : {len(result.downloaded)}")
-        if result.skipped:
-            print(f"  Up to date : {len(result.skipped)}")
+
+        downloaded = len(result.downloaded)
+        skipped    = len(result.skipped)
+        errors     = len(result.errors)
+        manual     = len(result.manual_required)
+
+        parts = []
+        if downloaded:
+            parts.append(f"{downloaded} new")
+        if skipped:
+            parts.append(f"{skipped} up-to-date")
+        if errors:
+            parts.append(f"{errors} error(s)")
+        if manual:
+            parts.append(f"{manual} manual")
+        summary = "  ".join(parts) if parts else "nothing to do"
+        print(f" done  [{summary}]")
+
         if result.errors:
-            print(f"  Errors     : {len(result.errors)}")
             for e in result.errors:
-                print(f"    {e[0]}: {e[1]}")
+                print(f"      error: {e[0]}: {e[1]}")
         if result.manual_required:
-            print(f"  Manual required: {len(result.manual_required)} (see sync report for URLs)")
+            print(f"      {manual} doc(s) require manual download (see sync report for URLs)")
         if result.notices:
             print()
             for notice in result.notices:
-                print(f"  [!] {notice}")
+                print(f"      [!] {notice}")
 
-        # Record total attempted (downloaded + skipped + errors) for X/Y display.
-        # manual_required docs are not attempted by the tool so are excluded.
-        total = len(result.downloaded) + len(result.skipped) + len(result.errors)
+        total = downloaded + skipped + errors
         if total > 0:
             state.set_service_total(svc.key, total)
         return result
 
     except Exception as exc:  # noqa: BLE001
-        print(f" failed.\n  Error: {exc}")
+        print(f" failed\n      Error: {exc}")
         return None
 
 
@@ -226,7 +287,7 @@ def _run_scan(source_dir: Path, state) -> None:
         print(f"\r  {label:<40} {status}{synced}")
 
     print()
-    print("  Note: NIST Drafts excluded from quick scan (requires full crawl — use Sync to update).")  # noqa: E501
+    print("  Note: NIST Drafts excluded from quick scan (requires full crawl — use Sync).")
     print()
 
 
@@ -238,18 +299,34 @@ def main() -> None:
     _check_dependencies()
 
     # Lazy imports — only reached if dependencies are present
-    from core.downloaders import GROUPS, SERVICES, SERVICES_BY_GROUP
+    from core.configure import active_service_keys, load_config, run_configure
+    from core.downloaders import GROUPS, SERVICES
     from core.reporter import build_report, save_report, slugify
     from core.state import StateFile
 
-    source_dir = Path("source-content")
-    report_dir = Path("reports")
+    source_dir     = Path("source-content")
+    report_dir     = Path("reports")
     normalized_dir = Path("normalized-content")
     source_dir.mkdir(parents=True, exist_ok=True)
     state = StateFile(source_dir)
 
+    # Load config and apply tracked-framework filter
+    cfg = load_config()
+    all_keys = [s.key for s in SERVICES]
+    active_keys = active_service_keys(cfg, all_keys)
+    active_svcs = [s for s in SERVICES if s.key in active_keys]
+
+    # Rebuild group-aware structures from filtered service list
+    active_groups = [g for g in GROUPS if any(s.group == g for s in active_svcs)]
+    active_by_group = {g: [s for s in active_svcs if s.group == g] for g in active_groups}
+
+    # Auto-check on launch (if configured)
+    if cfg.get("auto_check_on_launch"):
+        _run_scan(source_dir, state)
+
     while True:
-        _print_group_menu(GROUPS, SERVICES_BY_GROUP, state.entries())
+        entries = state.entries()
+        _print_group_menu(active_groups, active_by_group, entries)
 
         try:
             choice = input("Select: ").strip().lower()
@@ -257,13 +334,23 @@ def main() -> None:
             print("\nGoodbye.")
             break
 
-        if choice in ("q", "0"):
+        if choice in ("q", ):
             print("Goodbye.")
             break
 
+        if choice == "0":
+            cfg = run_configure(SERVICES)
+            # Re-apply tracked-framework filter after configure
+            active_keys = active_service_keys(cfg, all_keys)
+            active_svcs = [s for s in SERVICES if s.key in active_keys]
+            active_groups = [g for g in GROUPS if any(s.group == g for s in active_svcs)]
+            active_by_group = {g: [s for s in active_svcs if s.group == g] for g in active_groups}
+            continue
+
         if choice == "s":
+            print()
             sync_results = []
-            for svc in SERVICES:
+            for svc in active_svcs:
                 sync_results.append((svc, _run_sync(svc, source_dir, state)))
             screen_text, full_md = build_report(sync_results, "Complete Sync")
             report_path = save_report(full_md, report_dir, "complete")
@@ -278,9 +365,9 @@ def main() -> None:
         elif choice == "c":
             _run_scan(source_dir, state)
 
-        elif choice.isdigit() and 1 <= int(choice) <= len(GROUPS):
-            group = GROUPS[int(choice) - 1]
-            svcs  = SERVICES_BY_GROUP[group]
+        elif choice.isdigit() and 1 <= int(choice) <= len(active_groups):
+            group = active_groups[int(choice) - 1]
+            svcs  = active_by_group[group]
 
             while True:
                 _print_framework_menu(group, svcs, state.entries(), state)
@@ -299,6 +386,7 @@ def main() -> None:
                     sys.exit(0)
 
                 if sub == "s":
+                    print()
                     sync_results = []
                     for svc in svcs:
                         sync_results.append((svc, _run_sync(svc, source_dir, state)))
@@ -313,10 +401,12 @@ def main() -> None:
                     _run_normalize(source_dir, normalized_dir, services=svcs, label=group)
 
                 elif sub.isdigit() and 1 <= int(sub) <= len(svcs):
+                    print()
                     _run_sync(svcs[int(sub) - 1], source_dir, state)
+                    print()
 
                 else:
-                    print("Invalid selection.")
+                    print("  Invalid selection.")
 
         else:
-            print("Invalid selection.")
+            print("  Invalid selection.")
