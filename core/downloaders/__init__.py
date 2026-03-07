@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Optional
 
 from . import (
+    cis_benchmarks,
     cis_controls,
     cisa_bod,
     cisa_ed,
@@ -24,6 +25,7 @@ from . import (
     fedramp,
     fedramp_github,
     ftc_safeguards,
+    gdpr,
     govramp,
     hipaa,
     iec62443,
@@ -32,10 +34,12 @@ from . import (
     nispom,
     nist,
     nist_oscal,
+    nist_privacy,
     nsa,
     omb,
     owasp_asvs,
     pci_dss,
+    soc2,
 )
 from .base import DownloadResult
 
@@ -75,6 +79,10 @@ SERVICES: list[ServiceDef] = [
         nist.run_drafts, "nist/draft-pubs", "NIST",
     ),
     ServiceDef("nist-oscal", "NIST OSCAL Content", nist_oscal.run, "nist-oscal", "NIST"),
+    ServiceDef(
+        "nist-privacy", "NIST Privacy Framework v1.0",
+        nist_privacy.run, "nist-privacy", "NIST",
+    ),
     # ── FedRAMP ───────────────────────────────────────────────────────────────
     ServiceDef("fedramp", "FedRAMP", fedramp.run, "fedramp", "FedRAMP"),
     ServiceDef(
@@ -123,6 +131,11 @@ SERVICES: list[ServiceDef] = [
         cis_controls.run, "cis-controls", "Frameworks",
     ),
     ServiceDef("pci-dss", "PCI DSS v4.0.1", pci_dss.run, "pci-dss", "Frameworks"),
+    ServiceDef("soc2", "SOC 2 / AICPA Trust Services Criteria", soc2.run, "soc2", "Frameworks"),
+    ServiceDef(
+        "cis-benchmarks", "CIS Benchmarks",
+        cis_benchmarks.run, "cis-benchmarks", "Frameworks",
+    ),
     # ── Policy / Regulatory ───────────────────────────────────────────────────
     ServiceDef("hipaa", "HIPAA Security Rule", hipaa.run, "hipaa", "Policy / Regulatory"),
     ServiceDef("cjis", "CJIS Security Policy", cjis.run, "cjis", "Policy / Regulatory"),
@@ -147,6 +160,10 @@ SERVICES: list[ServiceDef] = [
     ServiceDef(
         "common-criteria", "Common Criteria (ISO/IEC 15408)",
         common_criteria.run, "common-criteria", "International Standards",
+    ),
+    ServiceDef(
+        "gdpr", "GDPR (Regulation EU 2016/679)",
+        gdpr.run, "gdpr", "International Standards",
     ),
 ]
 
