@@ -6,7 +6,7 @@ A self-contained Python tool for downloading, syncing, and normalizing complianc
 
 ## Supported Frameworks
 
-26 frameworks across 5 groups:
+38 frameworks across 8 groups:
 
 **NIST**
 | Framework | Source |
@@ -14,6 +14,7 @@ A self-contained Python tool for downloading, syncing, and normalizing complianc
 | NIST Final Publications | csrc.nist.gov |
 | NIST Draft Publications | csrc.nist.gov |
 | NIST OSCAL Content | github.com/usnistgov/oscal-content |
+| NIST Privacy Framework v1.0 | nist.gov/privacy-framework |
 
 **FedRAMP**
 | Framework | Source |
@@ -26,6 +27,7 @@ A self-contained Python tool for downloading, syncing, and normalizing complianc
 | Framework | Source |
 |---|---|
 | CISA Binding Operational Directives | cisa.gov |
+| CISA Emergency Directives | cisa.gov |
 | CISA Zero Trust Maturity Model | cisa.gov |
 | CISA Known Exploited Vulnerabilities | cisa.gov |
 
@@ -35,7 +37,11 @@ A self-contained Python tool for downloading, syncing, and normalizing complianc
 | CMMC | dodcio.defense.gov |
 | DISA STIGs | dl.dod.cyber.mil |
 | DFARS / FAR Cybersecurity Clauses | acquisition.gov / ecfr.gov |
-| DoD Zero Trust & Directives | dodcio.defense.gov |
+| DoD Zero Trust & Directives | dowcio.war.gov |
+| DoD DevSecOps & cATO | dowcio.war.gov |
+| DoD ICAM | dowcio.war.gov |
+| DoD 8140 Cyberspace Workforce | dowcio.war.gov |
+| DoD Cloud Security | dowcio.war.gov |
 | NSA Cybersecurity Advisories | nsa.gov (manual — WAF protected) |
 | DCSA NISPOM (32 CFR Part 117) | ecfr.gov |
 | CNSS Instructions & Policies | cnss.gov |
@@ -52,6 +58,8 @@ A self-contained Python tool for downloading, syncing, and normalizing complianc
 | CSA Cloud Controls Matrix v4.1 | cloudsecurityalliance.org |
 | CIS Controls v8 (Structured Data) | github.com/CISecurity/ControlsAssessmentSpecification |
 | PCI DSS v4.0.1 | pcisecuritystandards.org |
+| SOC 2 / AICPA Trust Services Criteria | aicpa-cima.com |
+| CIS Benchmarks | workbench.cisecurity.org (free account required) |
 
 **Policy / Regulatory**
 | Framework | Source |
@@ -61,6 +69,14 @@ A self-contained Python tool for downloading, syncing, and normalizing complianc
 | OMB Cybersecurity Memoranda | whitehouse.gov |
 | Executive Orders (Cybersecurity) | federalregister.gov |
 | FTC Safeguards Rule (16 CFR Part 314) | ecfr.gov |
+
+**International Standards**
+| Framework | Source |
+|---|---|
+| ISO/IEC 27000 Series | iso.org (publicly available standards) |
+| IEC 62443 (IACS Security) | iec.ch (publicly available standards) |
+| Common Criteria (ISO/IEC 15408) | commoncriteriaportal.org |
+| GDPR (Regulation EU 2016/679) | eur-lex.europa.eu |
 
 ## Requirements
 
@@ -90,15 +106,21 @@ Every run after that goes straight to the menu — no activation, no setup.
 ## Usage
 
 ```
-CompliGator
-----------------------------------------------------
-  1. NIST                     3 frameworks  last synced 2026-03-03
-  2. FedRAMP                  3 frameworks  last synced 2026-03-03
-  3. CISA                     3 frameworks  last synced 2026-03-02
-  4. DoD / Defense            7 frameworks  last synced 2026-03-03
-  5. Threat Intel             1 framework   last synced 2026-03-03
-  6. Frameworks               4 frameworks  last synced 2026-03-03
-  7. Policy / Regulatory      5 frameworks  last synced 2026-03-03
+╔════════════════════════════════════════════════════════════════════╗
+║                          COMPLIGATOR                               ║
+╚════════════════════════════════════════════════════════════════════╝
+──────────────────────────────────────────────────────────────────────
+MAIN MENU
+──────────────────────────────────────────────────────────────────────
+  [0]    Configure
+  [1]    NIST                     4 frameworks  last synced 2026-03-03
+  [2]    FedRAMP                  3 frameworks  last synced 2026-03-03
+  [3]    CISA                     4 frameworks  last synced 2026-03-02
+  [4]    DoD / Defense           11 frameworks  last synced 2026-03-03
+  [5]    Threat Intel             1 framework   last synced 2026-03-03
+  [6]    Frameworks               6 frameworks  last synced 2026-03-03
+  [7]    Policy / Regulatory      5 frameworks  last synced 2026-03-03
+  [8]    International Standards  4 frameworks  last synced 2026-03-03
 
 ──────────────────────────────────────────────────────────────────────
   s = sync all  |  n = normalize all  |  c = check for updates  |  q = quit
@@ -107,7 +129,7 @@ CompliGator
 
 Select a group number to open it, then choose a framework to sync individually or press `s` to sync the whole group. From the main menu:
 
-- **`s`** — sync all 26 frameworks
+- **`s`** — sync all 38 frameworks
 - **`n`** — normalize all downloaded documents
 - **`c`** — quick scan: check for updates without downloading (see below)
 - **`q`** — quit
@@ -198,13 +220,6 @@ reports/
 
 source-content/
 ├── .compligator-state.json
-├── fedramp/
-├── fedramp-github/
-│   ├── baselines/
-│   ├── resources/
-│   ├── templates/
-│   └── guides/
-├── govramp/
 ├── nist/
 │   ├── final-pubs/
 │   └── draft-pubs/
@@ -213,13 +228,26 @@ source-content/
 │   ├── SP800-171/rev3/
 │   ├── SP800-218/ver1/
 │   └── CSF/v2.0/
+├── nist-privacy/
+├── fedramp/
+├── fedramp-github/
+│   ├── baselines/
+│   ├── resources/
+│   ├── templates/
+│   └── guides/
+├── govramp/
 ├── cisa-bod/
+├── cisa-ed/
 ├── cisa-zt/
 ├── cisa-kev/
 ├── cmmc/
 ├── disa-stigs/
 ├── dfars-far/
 ├── dod-zt/
+├── dod-devsecops/
+├── dod-icam/
+├── dod-8140/
+├── dod-cloud/
 ├── nsa/
 ├── nispom/
 ├── cnss/
@@ -228,11 +256,17 @@ source-content/
 ├── csa-ccm/
 ├── cis-controls/
 ├── pci-dss/
+├── soc2/
+├── cis-benchmarks/
 ├── hipaa/
 ├── cjis/
 ├── omb/
 ├── executive-orders/
-└── ftc-safeguards/
+├── ftc-safeguards/
+├── iso27k/
+├── iec62443/
+├── common-criteria/
+└── gdpr/
 ```
 
 ## Known Limitations

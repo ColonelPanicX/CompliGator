@@ -1,13 +1,13 @@
 """DoD Zero Trust and Cybersecurity Directives downloader.
 
-Downloads the DoD Zero Trust Strategy from a publicly accessible DTIC mirror.
-The remaining documents (ZT Reference Architecture, DoDI 8500.01, DoDI 8510.01)
-are listed as manual_required — dodcio.defense.gov and esd.whs.mil return 403
-for all automated requests including headless browsers; no working public mirror
-has been identified.
+All documents sourced from dowcio.war.gov/Library/ — direct PDF links,
+no WAF restrictions, no CAC required. This replaces the previous
+dodcio.defense.gov source, which returned 403 for all automated requests.
+
+DoDI 8500.01 and DoDI 8510.01 remain manual_required — esd.whs.mil
+returns 403 for automation and no public mirror has been identified.
 
 Manual download sources:
-  - ZT RA v2.0:   https://dodcio.defense.gov/Library/
   - DoDI 8500.01: https://www.esd.whs.mil/Directives/issuances/dodi/
   - DoDI 8510.01: https://www.esd.whs.mil/Directives/issuances/dodi/
 """
@@ -24,27 +24,47 @@ if TYPE_CHECKING:
 
 from .base import DownloadResult, download_file
 
-SOURCE_URL = "https://dodcio.defense.gov/Library/"
+SOURCE_URL = "https://dowcio.war.gov/Library/"
 
 # Date these URLs were last manually verified.
-KNOWN_DOCS_VERIFIED = "2026-03-01"
+KNOWN_DOCS_VERIFIED = "2026-03-31"
+
+BASE = "https://dowcio.war.gov"
 
 # (filename, url) — documents that can be fetched automatically.
-# DoD ZT Strategy is mirrored on DTIC (Defense Technical Information Center),
-# which serves files publicly without WAF restrictions.
 KNOWN_DOCS: list[tuple[str, str]] = [
     (
         "DoD-ZT-Strategy.pdf",
-        "https://apps.dtic.mil/sti/trecms/pdf/AD1205814.pdf",
+        BASE + "/Portals/0/Documents/Library/DoD-ZTStrategy.pdf",
+    ),
+    (
+        "DoD-ZT-RA-v2.0.pdf",
+        BASE + "/Portals/0/Documents/Library/(U)ZT_RA_v2.0(U)_Sep22.pdf",
+    ),
+    (
+        "DoD-ZT-Capabilities-Activities.pdf",
+        BASE + "/Portals/0/Documents/Library/ZT-CapabilitiesActivities.pdf",
+    ),
+    (
+        "DoD-ZT-Capability-Execution-Roadmap-v1.1.pdf",
+        BASE + "/Portals/0/Documents/Library/ZT-ExecutionRoadmap-v1.1.pdf",
+    ),
+    (
+        "DoD-ZT-OT-Activities-Outcomes-v2.pdf",
+        BASE + "/Portals/0/Documents/Library/ZT-OperationalTechnologyActivitiesOutcomes_v2.pdf",
+    ),
+    (
+        "DoD-ZT-Strategy-Placemats.pdf",
+        BASE + "/Portals/0/Documents/Library/ZT-StrategyPlacemats.pdf",
+    ),
+    (
+        "DoD-ZT-PfMO-Newsletter-Nov2024.pdf",
+        BASE + "/Portals/0/Documents/Library/ZT-NewsletterNov.pdf",
     ),
 ]
 
 # Documents that require manual download — (filename, source_url).
 MANUAL_DOCS: list[tuple[str, str]] = [
-    (
-        "DoD-ZT-RA-v2.0.pdf",
-        "https://dodcio.defense.gov/Library/",
-    ),
     (
         "DoDI-8500.01.pdf",
         "https://www.esd.whs.mil/Directives/issuances/dodi/",

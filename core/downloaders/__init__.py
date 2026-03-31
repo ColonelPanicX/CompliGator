@@ -7,31 +7,43 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Optional
 
 from . import (
+    cis_benchmarks,
     cis_controls,
     cisa_bod,
+    cisa_ed,
     cisa_kev,
     cisa_zt,
     cjis,
     cmmc,
     cnss,
+    common_criteria,
     csa_ccm,
     dfars_far,
     disa,
+    dod_8140,
+    dod_cloud,
+    dod_devsecops,
+    dod_icam,
     dod_zt,
     executive_orders,
     fedramp,
     fedramp_github,
     ftc_safeguards,
+    gdpr,
     govramp,
     hipaa,
+    iec62443,
+    iso27k,
     mitre_attack,
     nispom,
     nist,
     nist_oscal,
+    nist_privacy,
     nsa,
     omb,
     owasp_asvs,
     pci_dss,
+    soc2,
 )
 from .base import DownloadResult
 
@@ -57,6 +69,7 @@ GROUPS: list[str] = [
     "Threat Intel",
     "Frameworks",
     "Policy / Regulatory",
+    "International Standards",
 ]
 
 SERVICES: list[ServiceDef] = [
@@ -70,6 +83,10 @@ SERVICES: list[ServiceDef] = [
         nist.run_drafts, "nist/draft-pubs", "NIST",
     ),
     ServiceDef("nist-oscal", "NIST OSCAL Content", nist_oscal.run, "nist-oscal", "NIST"),
+    ServiceDef(
+        "nist-privacy", "NIST Privacy Framework v1.0",
+        nist_privacy.run, "nist-privacy", "NIST",
+    ),
     # ── FedRAMP ───────────────────────────────────────────────────────────────
     ServiceDef("fedramp", "FedRAMP", fedramp.run, "fedramp", "FedRAMP"),
     ServiceDef(
@@ -81,6 +98,10 @@ SERVICES: list[ServiceDef] = [
     ServiceDef(
         "cisa-bod", "CISA Binding Operational Directives",
         cisa_bod.run, "cisa-bod", "CISA",
+    ),
+    ServiceDef(
+        "cisa-ed", "CISA Emergency Directives",
+        cisa_ed.run, "cisa-ed", "CISA",
     ),
     ServiceDef("cisa-zt", "CISA Zero Trust Maturity Model", cisa_zt.run, "cisa-zt", "CISA"),
     ServiceDef(
@@ -95,6 +116,19 @@ SERVICES: list[ServiceDef] = [
         dfars_far.run, "dfars-far", "DoD / Defense",
     ),
     ServiceDef("dod-zt", "DoD Zero Trust & Directives", dod_zt.run, "dod-zt", "DoD / Defense"),
+    ServiceDef(
+        "dod-devsecops", "DoD DevSecOps & cATO",
+        dod_devsecops.run, "dod-devsecops", "DoD / Defense",
+    ),
+    ServiceDef("dod-icam", "DoD ICAM", dod_icam.run, "dod-icam", "DoD / Defense"),
+    ServiceDef(
+        "dod-8140", "DoD 8140 Cyberspace Workforce",
+        dod_8140.run, "dod-8140", "DoD / Defense",
+    ),
+    ServiceDef(
+        "dod-cloud", "DoD Cloud Security",
+        dod_cloud.run, "dod-cloud", "DoD / Defense",
+    ),
     ServiceDef("nsa", "NSA Cybersecurity Advisories", nsa.run, "nsa", "DoD / Defense"),
     ServiceDef(
         "nispom", "DCSA NISPOM (32 CFR Part 117)",
@@ -114,6 +148,11 @@ SERVICES: list[ServiceDef] = [
         cis_controls.run, "cis-controls", "Frameworks",
     ),
     ServiceDef("pci-dss", "PCI DSS v4.0.1", pci_dss.run, "pci-dss", "Frameworks"),
+    ServiceDef("soc2", "SOC 2 / AICPA Trust Services Criteria", soc2.run, "soc2", "Frameworks"),
+    ServiceDef(
+        "cis-benchmarks", "CIS Benchmarks",
+        cis_benchmarks.run, "cis-benchmarks", "Frameworks",
+    ),
     # ── Policy / Regulatory ───────────────────────────────────────────────────
     ServiceDef("hipaa", "HIPAA Security Rule", hipaa.run, "hipaa", "Policy / Regulatory"),
     ServiceDef("cjis", "CJIS Security Policy", cjis.run, "cjis", "Policy / Regulatory"),
@@ -125,6 +164,23 @@ SERVICES: list[ServiceDef] = [
     ServiceDef(
         "ftc-safeguards", "FTC Safeguards Rule (16 CFR Part 314)",
         ftc_safeguards.run, "ftc-safeguards", "Policy / Regulatory",
+    ),
+    # ── International Standards ───────────────────────────────────────────────
+    ServiceDef(
+        "iso27k", "ISO/IEC 27000 Series",
+        iso27k.run, "iso27k", "International Standards",
+    ),
+    ServiceDef(
+        "iec62443", "IEC 62443 (IACS Security)",
+        iec62443.run, "iec62443", "International Standards",
+    ),
+    ServiceDef(
+        "common-criteria", "Common Criteria (ISO/IEC 15408)",
+        common_criteria.run, "common-criteria", "International Standards",
+    ),
+    ServiceDef(
+        "gdpr", "GDPR (Regulation EU 2016/679)",
+        gdpr.run, "gdpr", "International Standards",
     ),
 ]
 
