@@ -219,7 +219,7 @@ def _run_sync(svc, output_dir: Path, state):
             for notice in result.notices:
                 print(f"      [!] {notice}")
 
-        total = downloaded + skipped + errors
+        total = downloaded + skipped + errors + manual
         if total > 0:
             state.set_service_total(svc.key, total)
         return result
