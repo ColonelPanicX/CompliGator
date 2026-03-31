@@ -6,7 +6,7 @@ A self-contained Python tool for downloading, syncing, and normalizing complianc
 
 ## Supported Frameworks
 
-34 frameworks across 8 groups:
+38 frameworks across 8 groups:
 
 **NIST**
 | Framework | Source |
@@ -37,7 +37,11 @@ A self-contained Python tool for downloading, syncing, and normalizing complianc
 | CMMC | dodcio.defense.gov |
 | DISA STIGs | dl.dod.cyber.mil |
 | DFARS / FAR Cybersecurity Clauses | acquisition.gov / ecfr.gov |
-| DoD Zero Trust & Directives | dodcio.defense.gov |
+| DoD Zero Trust & Directives | dowcio.war.gov |
+| DoD DevSecOps & cATO | dowcio.war.gov |
+| DoD ICAM | dowcio.war.gov |
+| DoD 8140 Cyberspace Workforce | dowcio.war.gov |
+| DoD Cloud Security | dowcio.war.gov |
 | NSA Cybersecurity Advisories | nsa.gov (manual — WAF protected) |
 | DCSA NISPOM (32 CFR Part 117) | ecfr.gov |
 | CNSS Instructions & Policies | cnss.gov |
@@ -112,7 +116,7 @@ MAIN MENU
   [1]    NIST                     4 frameworks  last synced 2026-03-03
   [2]    FedRAMP                  3 frameworks  last synced 2026-03-03
   [3]    CISA                     4 frameworks  last synced 2026-03-02
-  [4]    DoD / Defense            7 frameworks  last synced 2026-03-03
+  [4]    DoD / Defense           11 frameworks  last synced 2026-03-03
   [5]    Threat Intel             1 framework   last synced 2026-03-03
   [6]    Frameworks               6 frameworks  last synced 2026-03-03
   [7]    Policy / Regulatory      5 frameworks  last synced 2026-03-03
@@ -125,7 +129,7 @@ MAIN MENU
 
 Select a group number to open it, then choose a framework to sync individually or press `s` to sync the whole group. From the main menu:
 
-- **`s`** — sync all 34 frameworks
+- **`s`** — sync all 38 frameworks
 - **`n`** — normalize all downloaded documents
 - **`c`** — quick scan: check for updates without downloading (see below)
 - **`q`** — quit
@@ -240,6 +244,10 @@ source-content/
 ├── disa-stigs/
 ├── dfars-far/
 ├── dod-zt/
+├── dod-devsecops/
+├── dod-icam/
+├── dod-8140/
+├── dod-cloud/
 ├── nsa/
 ├── nispom/
 ├── cnss/
