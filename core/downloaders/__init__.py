@@ -20,6 +20,10 @@ from . import (
     csa_ccm,
     dfars_far,
     disa,
+    dod_8140,
+    dod_cloud,
+    dod_devsecops,
+    dod_icam,
     dod_zt,
     executive_orders,
     fedramp,
@@ -112,6 +116,19 @@ SERVICES: list[ServiceDef] = [
         dfars_far.run, "dfars-far", "DoD / Defense",
     ),
     ServiceDef("dod-zt", "DoD Zero Trust & Directives", dod_zt.run, "dod-zt", "DoD / Defense"),
+    ServiceDef(
+        "dod-devsecops", "DoD DevSecOps & cATO",
+        dod_devsecops.run, "dod-devsecops", "DoD / Defense",
+    ),
+    ServiceDef("dod-icam", "DoD ICAM", dod_icam.run, "dod-icam", "DoD / Defense"),
+    ServiceDef(
+        "dod-8140", "DoD 8140 Cyberspace Workforce",
+        dod_8140.run, "dod-8140", "DoD / Defense",
+    ),
+    ServiceDef(
+        "dod-cloud", "DoD Cloud Security",
+        dod_cloud.run, "dod-cloud", "DoD / Defense",
+    ),
     ServiceDef("nsa", "NSA Cybersecurity Advisories", nsa.run, "nsa", "DoD / Defense"),
     ServiceDef(
         "nispom", "DCSA NISPOM (32 CFR Part 117)",
