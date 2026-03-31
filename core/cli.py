@@ -166,7 +166,7 @@ def _print_framework_menu(group: str, svcs: list, entries: dict, state) -> None:
     for i, svc in enumerate(svcs, 1):
         if has_non_auto and not in_manual_section and svc.acquisition != "auto":
             print()
-            label = "── Manual Acquisition "
+            label = "── Partial / Manual Acquisition "
             print(f"  {label}{'─' * (WIDTH - 2 - len(label))}")
             in_manual_section = True
 
