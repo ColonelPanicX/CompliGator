@@ -59,7 +59,8 @@ KNOWN_DOCS: list[tuple[str, str]] = [
     ),
     (
         "DoD-cATO-Evaluation-Criteria.pdf",
-        BASE + "/Portals/0/Documents/Library/cATO-EvaluationCriteria.pdf",
+        BASE + "/Portals/0/Documents/Library/cATO-EvaluationCriteria.pdf"
+        "?ver=A8tLIfPjmp3RpemU6JOhJw%3d%3d",
     ),
     (
         "DoD-Continuous-Authorization-Implementation-Guide.pdf",
