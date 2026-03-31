@@ -56,8 +56,9 @@ class ServiceDef:
     key: str
     label: str
     runner: Callable[[Path, bool, bool, Optional["StateFile"]], DownloadResult]
-    subdir: str  # path prefix under output_dir used by this downloader
-    group: str   # top-level menu group this service belongs to
+    subdir: str         # path prefix under output_dir used by this downloader
+    group: str          # top-level menu group this service belongs to
+    acquisition: str = "auto"  # "auto" | "mixed" | "manual"
 
 
 # Ordered display groups for the top-level menu.
@@ -109,13 +110,16 @@ SERVICES: list[ServiceDef] = [
         cisa_kev.run, "cisa-kev", "CISA",
     ),
     # ── DoD / Defense ─────────────────────────────────────────────────────────
-    ServiceDef("cmmc", "CMMC", cmmc.run, "cmmc", "DoD / Defense"),
+    ServiceDef("cmmc", "CMMC", cmmc.run, "cmmc", "DoD / Defense", acquisition="mixed"),
     ServiceDef("disa", "DISA STIGs", disa.run, "disa-stigs", "DoD / Defense"),
     ServiceDef(
         "dfars-far", "DFARS / FAR Cybersecurity Clauses",
         dfars_far.run, "dfars-far", "DoD / Defense",
     ),
-    ServiceDef("dod-zt", "DoD Zero Trust & Directives", dod_zt.run, "dod-zt", "DoD / Defense"),
+    ServiceDef(
+        "dod-zt", "DoD Zero Trust & Directives",
+        dod_zt.run, "dod-zt", "DoD / Defense", acquisition="mixed",
+    ),
     ServiceDef(
         "dod-devsecops", "DoD DevSecOps & cATO",
         dod_devsecops.run, "dod-devsecops", "DoD / Defense",
@@ -129,10 +133,13 @@ SERVICES: list[ServiceDef] = [
         "dod-cloud", "DoD Cloud Security",
         dod_cloud.run, "dod-cloud", "DoD / Defense",
     ),
-    ServiceDef("nsa", "NSA Cybersecurity Advisories", nsa.run, "nsa", "DoD / Defense"),
+    ServiceDef(
+        "nsa", "NSA Cybersecurity Advisories",
+        nsa.run, "nsa", "DoD / Defense", acquisition="manual",
+    ),
     ServiceDef(
         "nispom", "DCSA NISPOM (32 CFR Part 117)",
-        nispom.run, "nispom", "DoD / Defense",
+        nispom.run, "nispom", "DoD / Defense", acquisition="mixed",
     ),
     ServiceDef("cnss", "CNSS Instructions & Policies", cnss.run, "cnss", "DoD / Defense"),
     # ── Threat Intel ──────────────────────────────────────────────────────────
@@ -147,7 +154,10 @@ SERVICES: list[ServiceDef] = [
         "cis-controls", "CIS Controls v8 (Structured Data)",
         cis_controls.run, "cis-controls", "Frameworks",
     ),
-    ServiceDef("pci-dss", "PCI DSS v4.0.1", pci_dss.run, "pci-dss", "Frameworks"),
+    ServiceDef(
+        "pci-dss", "PCI DSS v4.0.1",
+        pci_dss.run, "pci-dss", "Frameworks", acquisition="mixed",
+    ),
     ServiceDef("soc2", "SOC 2 / AICPA Trust Services Criteria", soc2.run, "soc2", "Frameworks"),
     ServiceDef(
         "cis-benchmarks", "CIS Benchmarks",
@@ -168,11 +178,11 @@ SERVICES: list[ServiceDef] = [
     # ── International Standards ───────────────────────────────────────────────
     ServiceDef(
         "iso27k", "ISO/IEC 27000 Series",
-        iso27k.run, "iso27k", "International Standards",
+        iso27k.run, "iso27k", "International Standards", acquisition="manual",
     ),
     ServiceDef(
         "iec62443", "IEC 62443 (IACS Security)",
-        iec62443.run, "iec62443", "International Standards",
+        iec62443.run, "iec62443", "International Standards", acquisition="manual",
     ),
     ServiceDef(
         "common-criteria", "Common Criteria (ISO/IEC 15408)",
