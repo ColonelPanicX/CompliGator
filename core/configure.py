@@ -77,6 +77,7 @@ CONFIG_FILENAME = ".compligator-config.json"
 DEFAULT_CONFIG: dict = {
     "auto_check_on_launch": False,
     "tracked_frameworks": None,   # None = all frameworks enabled
+    "known_frameworks": None,     # snapshot of all keys at last Configure save
 }
 
 
@@ -110,11 +111,18 @@ def save_config(cfg: dict, cwd: Optional[Path] = None) -> None:
 
 
 def active_service_keys(cfg: dict, all_keys: list[str]) -> list[str]:
-    """Return the list of framework keys that are currently enabled."""
+    """Return the list of framework keys that are currently enabled.
+
+    Frameworks not present in known_frameworks (added after the last Configure
+    save) are treated as newly added and included automatically.
+    """
     tracked = cfg.get("tracked_frameworks")
     if tracked is None:
         return all_keys
-    return [k for k in all_keys if k in tracked]
+    tracked_set = set(tracked)
+    known_set = set(cfg.get("known_frameworks") or [])
+    # Include: explicitly enabled keys + any key not known at last config save
+    return [k for k in all_keys if k in tracked_set or k not in known_set]
 
 
 # ---------------------------------------------------------------------------
@@ -219,8 +227,10 @@ def _manage_frameworks(cfg: dict, all_services: list, cwd: Optional[Path] = None
             # None = all enabled (canonical form)
             if enabled == set(all_keys):
                 cfg["tracked_frameworks"] = None
+                cfg["known_frameworks"] = None
             else:
                 cfg["tracked_frameworks"] = [k for k in all_keys if k in enabled]
+                cfg["known_frameworks"] = all_keys  # snapshot for new-framework detection
             save_config(cfg, cwd)
             print("  Tracked frameworks saved.")
             print()
