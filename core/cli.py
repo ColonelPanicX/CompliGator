@@ -75,11 +75,22 @@ def _print_section(title: str) -> None:
 
 
 def _status_icon(entries: dict, svc) -> str:
-    """Return a status icon for a service based on its sync state."""
+    """Return a status icon for a service based on acquisition mode and sync state."""
+    if svc.acquisition == "manual":
+        return "[M]"
+    if svc.acquisition == "mixed":
+        return "[~]"
     prefix = svc.subdir + "/"
     if any(k.startswith(prefix) for k in entries):
         return "[x]"
     return "[ ]"
+
+
+def _split_by_acquisition(svcs: list) -> list:
+    """Return services ordered: auto first (preserving order), then mixed/manual."""
+    auto = [s for s in svcs if s.acquisition == "auto"]
+    non_auto = [s for s in svcs if s.acquisition != "auto"]
+    return auto + non_auto
 
 
 # ---------------------------------------------------------------------------
@@ -143,15 +154,29 @@ def _print_group_menu(groups: list[str], services_by_group: dict, entries: dict)
 
 
 def _print_framework_menu(group: str, svcs: list, entries: dict, state) -> None:
+    """Print the framework sub-menu. svcs must be pre-ordered (auto first, then mixed/manual)."""
     print()
     print(_BAR)
     print(group)
     print(_BAR)
+
+    has_non_auto = any(s.acquisition != "auto" for s in svcs)
+    in_manual_section = False
+
     for i, svc in enumerate(svcs, 1):
+        if has_non_auto and not in_manual_section and svc.acquisition != "auto":
+            print()
+            label = "── Manual Acquisition "
+            print(f"  {label}{'─' * (WIDTH - 2 - len(label))}")
+            in_manual_section = True
+
         icon = _status_icon(entries, svc)
         info = _svc_info(svc, entries, state)
         print(f"  {icon} [{i}]  {svc.label:<36} {info}")
+
     print()
+    print(_BAR)
+    print("  [x] synced  [ ] not synced  [~] partial  [M] manual only")
     print(_BAR)
     print("  s = sync all  |  n = normalize  |  b = back  |  x = main menu  |  q = quit")
     print(_BAR)
@@ -367,7 +392,7 @@ def main() -> None:
 
         elif choice.isdigit() and 1 <= int(choice) <= len(active_groups):
             group = active_groups[int(choice) - 1]
-            svcs  = active_by_group[group]
+            svcs  = _split_by_acquisition(active_by_group[group])
 
             while True:
                 _print_framework_menu(group, svcs, state.entries(), state)
