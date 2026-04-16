@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - run: uv sync --dev
+      - run: uv run ruff check compligator/ scripts/
+      - run: uv run black --check compligator/ scripts/
+      - run: uv run mypy compligator/
+      - run: uv run pytest -m "not slow"

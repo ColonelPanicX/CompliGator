@@ -16,11 +16,11 @@ dependencies = [
 ]
 
 [project.scripts]
-compligator = "core.cli:main"
+compligator = "compligator.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["core*"]
+include = ["compligator*"]
 
 [tool.ruff]
 target-version = "py39"
@@ -28,3 +28,42 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+
+[tool.black]
+line-length = 100
+target-version = ["py39"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = ["fitz", "playwright.*", "bs4"]
+ignore_missing_imports = true
+
+# Downloaders have pre-existing bs4 AttributeValueList type issues — Phase 2 scope
+[[tool.mypy.overrides]]
+module = ["compligator.downloaders.*"]
+ignore_errors = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "unit: marks fast, isolated unit tests",
+    "integration: marks tests that touch real files, network, or external state",
+    "slow: marks tests that take more than a few seconds",
+]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:"]
+
+[dependency-groups]
+dev = [
+    "black>=25.11.0",
+    "mypy>=1.19.1",
+    "pytest>=8.4.2",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.15.10",
+    "types-requests>=2.32.4.20260107",
+]
