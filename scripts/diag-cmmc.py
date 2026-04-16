@@ -180,7 +180,9 @@ else:
             try:
                 result = subprocess.run(
                     ["curl", "-L", "-s", "-w", "%{http_code}", "-o", str(dest), url],
-                    capture_output=True, text=True, timeout=30,
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
                 )
                 http_code = result.stdout.strip()
                 size = dest.stat().st_size if dest.exists() else 0

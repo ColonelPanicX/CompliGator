@@ -8,6 +8,7 @@ source-content/**
 !source-content/*/
 !source-content/*/README.md
 normalized-content/
+output/
 docs/
 
 # ── AI Agent Directories ───────────────────────────────────────────────────────
@@ -56,8 +57,6 @@ pnpm-debug.log*
 
 # Python tooling
 .venv/
-.cwm-venv/
-.compligator-venv/
 venv/
 .pytest_cache/
 .mypy_cache/

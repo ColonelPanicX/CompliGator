@@ -7,19 +7,19 @@ in dry-run mode to avoid multi-GB downloads during automated UAT.
 
 Usage:
     # Tier 2 only (default — matches current work-in-progress)
-    .compligator-venv/bin/python scripts/uat-downloaders.py
+    uv run python scripts/uat-downloaders.py
 
     # Specific tier
-    .compligator-venv/bin/python scripts/uat-downloaders.py --tier 1
+    uv run python scripts/uat-downloaders.py --tier 1
 
     # Specific frameworks
-    .compligator-venv/bin/python scripts/uat-downloaders.py --keys nsa,mitre-attack,govramp
+    uv run python scripts/uat-downloaders.py --keys nsa,mitre-attack,govramp
 
     # All registered frameworks
-    .compligator-venv/bin/python scripts/uat-downloaders.py --all
+    uv run python scripts/uat-downloaders.py --all
 
     # Custom output dir (default: test-output/uat-<timestamp>/)
-    .compligator-venv/bin/python scripts/uat-downloaders.py --output-dir /tmp/uat
+    uv run python scripts/uat-downloaders.py --output-dir /tmp/uat
 """
 
 from __future__ import annotations
@@ -33,15 +33,15 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from core.downloaders import SERVICES, SERVICES_BY_KEY  # noqa: E402
+from compligator.downloaders import SERVICES, SERVICES_BY_KEY  # noqa: E402
 
 # Frameworks that are too large for live automated UAT — tested in dry-run mode.
 # Dry-run still exercises API/scrape discovery logic; it just skips the actual download.
 DRY_RUN_KEYS: set[str] = {
-    "nist-finals",     # 2.1 GB
-    "nist-drafts",     # 146 MB
-    "disa",            # 350 MB
-    "mitre-attack",    # 50–200 MB
+    "nist-finals",  # 2.1 GB
+    "nist-drafts",  # 146 MB
+    "disa",  # 350 MB
+    "mitre-attack",  # 50–200 MB
     "fedramp-github",  # 34 MB
 }
 
@@ -54,14 +54,14 @@ TIER_KEYS: dict[int, set[str]] = {
 
 # Column widths
 _W_LABEL = 36
-_W_MODE  = 8
-_W_RSLT  = 6
+_W_MODE = 8
+_W_RSLT = 6
 _W_FILES = 8
-_W_ERRS  = 5
+_W_ERRS = 5
 
 
 def _label(text: str, width: int) -> str:
-    return text[:width - 2] + ".." if len(text) > width else text
+    return text[: width - 2] + ".." if len(text) > width else text
 
 
 def _result(downloaded: int, skipped: int, errors: int, manual: int) -> str:
@@ -114,8 +114,8 @@ def run_uat(keys: list[str], output_dir: Path) -> int:
             failures += 1
             continue
 
-        dl  = len(result.downloaded)
-        sk  = len(result.skipped)
+        dl = len(result.downloaded)
+        sk = len(result.skipped)
         err = len(result.errors)
         man = len(result.manual_required)
         verdict = _result(dl, sk, err, man)
