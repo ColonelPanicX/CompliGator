@@ -326,6 +326,11 @@ def _build_parser() -> argparse.ArgumentParser:
         action="version",
         version=f"%(prog)s {_get_version()}",
     )
+    parser.add_argument(
+        "--no-tui",
+        action="store_true",
+        help="Force the classic terminal menu instead of the Textual TUI",
+    )
     return parser
 
 
@@ -338,6 +343,12 @@ def main() -> None:
     _check_dependencies()
 
     args = _build_parser().parse_args()
+
+    if not args.no_tui:
+        from compligator.tui import main as tui_main
+
+        tui_main()
+        return
 
     # Lazy imports — only reached if dependencies are present
     from compligator.configure import active_service_keys, load_config, run_configure
