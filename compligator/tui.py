@@ -314,11 +314,11 @@ class CompliGatorApp(App[None]):
     def _sync_worker(self, key: str, dry_run: bool = False) -> None:
         svc = SERVICES_BY_KEY.get(key)
         if svc is None:
-            self.call_from_thread(self._log, f"[red]Unknown service key: {key}[/red]")
+            self.call_from_thread(self._write_log, f"[red]Unknown service key: {key}[/red]")
             return
 
         prefix = "[dim][DRY RUN][/dim] " if dry_run else ""
-        self.call_from_thread(self._log, f"{prefix}Syncing [bold]{svc.label}[/bold]…")
+        self.call_from_thread(self._write_log, f"{prefix}Syncing [bold]{svc.label}[/bold]…")
 
         try:
             result = svc.runner(  # type: ignore[call-arg]
@@ -349,23 +349,23 @@ class CompliGatorApp(App[None]):
 
             summary = "  ".join(parts) if parts else "nothing to do"
             self.call_from_thread(
-                self._log,
+                self._write_log,
                 f"{prefix}[bold]{svc.label}[/bold]  {summary}",
             )
 
             if result.errors:
                 for err in result.errors:
-                    self.call_from_thread(self._log, f"  [red]✗[/red] {err[0]}: {err[1]}")
+                    self.call_from_thread(self._write_log, f"  [red]✗[/red] {err[0]}: {err[1]}")
 
             if result.notices:
                 for notice in result.notices:
-                    self.call_from_thread(self._log, f"  [yellow]![/yellow] {notice}")
+                    self.call_from_thread(self._write_log, f"  [yellow]![/yellow] {notice}")
 
             self.call_from_thread(self._refresh_node, key)
 
         except Exception as exc:  # noqa: BLE001
             self.call_from_thread(
-                self._log,
+                self._write_log,
                 f"[red]✗ {svc.label} failed: {exc}[/red]",
             )
 
@@ -375,20 +375,30 @@ class CompliGatorApp(App[None]):
 
     def action_sync_selected(self) -> None:
         node = self.query_one("#framework-tree", Tree).cursor_node
-        if node and node.data:
+        if node is None:
+            self._write_log("[dim]Navigate to a framework first (arrow keys).[/dim]")
+            return
+        if node.data:
             self._sync_worker(node.data)
+        else:
+            # Cursor is on a group header — sync the whole group
+            self.action_sync_group()
 
     def action_sync_group(self) -> None:
         node = self.query_one("#framework-tree", Tree).cursor_node
         if node is None:
+            self._write_log("[dim]Navigate to a group first (arrow keys).[/dim]")
             return
-        # Cursor may be on a leaf (svc) or a group node
         group_node = node.parent if node.data else node
-        if group_node is None:
+        if group_node is None or group_node.is_root:
+            self._write_log("[dim]Navigate to a framework or group first.[/dim]")
             return
-        for child in group_node.children:
-            if child.data:
-                self._sync_worker(child.data)
+        keys = [child.data for child in group_node.children if child.data]
+        if not keys:
+            return
+        self._write_log(f"Syncing group [bold]{group_node.label}[/bold] ({len(keys)} frameworks)…")
+        for key in keys:
+            self._sync_worker(key)
 
     def action_sync_all(self) -> None:
         all_keys = [s.key for s in SERVICES]
@@ -398,8 +408,13 @@ class CompliGatorApp(App[None]):
 
     def action_check_selected(self) -> None:
         node = self.query_one("#framework-tree", Tree).cursor_node
-        if node and node.data:
+        if node is None:
+            self._write_log("[dim]Navigate to a framework first (arrow keys).[/dim]")
+            return
+        if node.data:
             self._sync_worker(node.data, dry_run=True)
+        else:
+            self._write_log("[dim]Navigate to a specific framework to check it.[/dim]")
 
     def action_normalize_selected(self) -> None:
         self._write_log("[yellow]Normalization will be wired in a future session.[/yellow]")
