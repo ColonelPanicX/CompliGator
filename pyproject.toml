@@ -13,14 +13,19 @@ dependencies = [
     "beautifulsoup4>=4.12",
     "playwright>=1.44",
     "pymupdf>=1.24",
+    "textual>=8.2.3",
 ]
 
 [project.scripts]
 compligator = "compligator.cli:main"
+compligator-tui = "compligator.tui:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["compligator*"]
+
+[tool.setuptools.package-data]
+compligator = ["data/*.json"]
 
 [tool.ruff]
 target-version = "py39"
