@@ -14,7 +14,7 @@ from typing import Optional
 from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, VerticalScroll
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
@@ -23,6 +23,7 @@ from textual.widgets import (
     Header,
     Label,
     RichLog,
+    Static,
     Switch,
     Tree,
 )
@@ -41,6 +42,14 @@ _SYNCED = "[green]✓[/green]"
 _PARTIAL = "[yellow]~[/yellow]"
 _UNSYNCED = "[dim]·[/dim]"
 _MANUAL = "[blue]M[/blue]"
+_SYNCING = "[yellow]⟳[/yellow]"
+
+_LEGEND = (
+    f"{_SYNCED} synced  "
+    f"{_PARTIAL} partial / dynamic  "
+    f"{_UNSYNCED} not synced  "
+    f"{_MANUAL} manual only"
+)
 
 
 def _status_icon(on_disk: int, entry: Optional[FrameworkEntry], acquisition: str) -> str:
@@ -62,7 +71,14 @@ def _count_str(on_disk: int, entry: Optional[FrameworkEntry]) -> str:
     return f"{on_disk}/{entry.total}"
 
 
-def _make_label(svc: ServiceDef, entries: dict, manifest: Manifest) -> str:
+def _make_label(
+    svc: ServiceDef,
+    entries: dict,
+    manifest: Manifest,
+    syncing: bool = False,
+) -> str:
+    if syncing:
+        return f"{_SYNCING}  {svc.label:<44} [yellow]syncing…[/yellow]"
     prefix = svc.subdir + "/"
     on_disk = sum(1 for k in entries if k.startswith(prefix))
     m_entry = manifest.get(svc.key)
@@ -158,7 +174,6 @@ class SettingsScreen(ModalScreen[Optional[dict]]):
             with VerticalScroll(id="fw-list"):
                 for svc in self._all_svcs:
                     enabled = tracked is None or svc.key in tracked
-                    # CSS IDs: replace hyphens with underscores for selector safety
                     safe_id = f"fw-{svc.key.replace('-', '_')}"
                     yield Checkbox(svc.label, value=enabled, id=safe_id)
             with Horizontal(id="settings-buttons"):
@@ -208,9 +223,18 @@ class CompliGatorApp(App[None]):
     #main {
         height: 1fr;
     }
-    #framework-tree {
+    #tree-panel {
         width: 3fr;
         border-right: tall $primary-darken-2;
+    }
+    #framework-tree {
+        height: 1fr;
+    }
+    #legend {
+        height: 1;
+        padding: 0 1;
+        border-top: solid $primary-darken-3;
+        color: $text-muted;
     }
     #activity-log {
         width: 2fr;
@@ -239,6 +263,7 @@ class CompliGatorApp(App[None]):
         self._manifest: Manifest = load_manifest()
         self._cfg: dict = load_config()
         self._node_map: dict[str, TreeNode] = {}
+        self._syncing: set[str] = set()
 
     # ------------------------------------------------------------------
     # Layout
@@ -247,11 +272,15 @@ class CompliGatorApp(App[None]):
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
         with Horizontal(id="main"):
-            yield Tree("Frameworks", id="framework-tree")
+            with Vertical(id="tree-panel"):
+                yield Tree("Frameworks", id="framework-tree")
+                yield Static(_LEGEND, id="legend")
             yield RichLog(id="activity-log", markup=True, highlight=True, wrap=True)
         yield Footer()
 
     def on_mount(self) -> None:
+        tree = self.query_one("#framework-tree", Tree)
+        tree.show_root = False
         self._build_tree()
         self._write_log(
             "Ready — [bold]s[/bold] sync  "
@@ -288,14 +317,19 @@ class CompliGatorApp(App[None]):
         tree.root.expand()
 
     def _refresh_node(self, key: str) -> None:
-        """Update a single node's label in the tree (called from main thread)."""
+        """Update a single node's label (must be called from the main thread)."""
         node = self._node_map.get(key)
         if node is None:
             return
         svc = SERVICES_BY_KEY.get(key)
         if svc is None:
             return
-        node.label = _make_label(svc, self._state.entries(), self._manifest)
+        node.label = _make_label(
+            svc,
+            self._state.entries(),
+            self._manifest,
+            syncing=key in self._syncing,
+        )
 
     # ------------------------------------------------------------------
     # Activity log
@@ -312,8 +346,13 @@ class CompliGatorApp(App[None]):
 
     @work(thread=True, exit_on_error=False)
     def _sync_worker(self, key: str, dry_run: bool = False) -> None:
+        # Show in-progress indicator immediately
+        self._syncing.add(key)
+        self.call_from_thread(self._refresh_node, key)
+
         svc = SERVICES_BY_KEY.get(key)
         if svc is None:
+            self._syncing.discard(key)
             self.call_from_thread(self._write_log, f"[red]Unknown service key: {key}[/red]")
             return
 
@@ -361,13 +400,16 @@ class CompliGatorApp(App[None]):
                 for notice in result.notices:
                     self.call_from_thread(self._write_log, f"  [yellow]![/yellow] {notice}")
 
-            self.call_from_thread(self._refresh_node, key)
-
         except Exception as exc:  # noqa: BLE001
             self.call_from_thread(
                 self._write_log,
                 f"[red]✗ {svc.label} failed: {exc}[/red]",
             )
+
+        finally:
+            # Always restore node to normal state
+            self._syncing.discard(key)
+            self.call_from_thread(self._refresh_node, key)
 
     # ------------------------------------------------------------------
     # Key actions
@@ -403,6 +445,7 @@ class CompliGatorApp(App[None]):
     def action_sync_all(self) -> None:
         all_keys = [s.key for s in SERVICES]
         active_keys = active_service_keys(self._cfg, all_keys)
+        self._write_log(f"Syncing all {len(active_keys)} active frameworks…")
         for key in active_keys:
             self._sync_worker(key)
 
