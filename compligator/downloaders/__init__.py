@@ -27,7 +27,6 @@ from . import (
     dod_zt,
     executive_orders,
     fedramp,
-    fedramp_github,
     ftc_safeguards,
     gdpr,
     govramp,
@@ -99,13 +98,6 @@ SERVICES: list[ServiceDef] = [
     ),
     # ── FedRAMP ───────────────────────────────────────────────────────────────
     ServiceDef("fedramp", "FedRAMP", fedramp.run, "fedramp", "FedRAMP"),
-    ServiceDef(
-        "fedramp-github",
-        "FedRAMP Automation (GitHub)",
-        fedramp_github.run,
-        "fedramp-github",
-        "FedRAMP",
-    ),
     ServiceDef("govramp", "GovRAMP", govramp.run, "govramp", "FedRAMP"),
     # ── CISA ──────────────────────────────────────────────────────────────────
     ServiceDef(

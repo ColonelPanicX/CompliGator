@@ -25,7 +25,7 @@ _VALID_RAW: dict = {
     "schema_version": _SCHEMA_VERSION,
     "updated": "2026-04-17",
     "frameworks": {
-        "fedramp-github": {"dynamic": True},
+        "cis-benchmarks": {"dynamic": True},
         "nist-privacy": {"total": 1, "automated": 1, "manual": 0},
         "pci-dss": {"total": 9, "automated": 7, "manual": 2},
     },
@@ -55,7 +55,7 @@ def test_parse_wrong_schema_version_raises() -> None:
 @pytest.mark.unit
 def test_parse_dynamic_entry() -> None:
     manifest = _parse(_VALID_RAW)
-    entry = manifest.get("fedramp-github")
+    entry = manifest.get("cis-benchmarks")
     assert entry is not None
     assert entry.dynamic is True
     assert entry.total is None

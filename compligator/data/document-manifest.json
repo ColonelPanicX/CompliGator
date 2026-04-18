@@ -7,7 +7,6 @@
     "nist-oscal":        { "total": 24,  "automated": 24,  "manual": 0 },
     "nist-privacy":      { "total": 1,   "automated": 1,   "manual": 0 },
     "fedramp":           { "total": 36,  "automated": 36,  "manual": 0 },
-    "fedramp-github":    { "dynamic": true, "note": "Source repo (GSA/fedramp-automation) removed — pending new source investigation" },
     "govramp":           { "total": 5,   "automated": 5,   "manual": 0 },
     "cisa-bod":          { "total": 17,  "automated": 17,  "manual": 0 },
     "cisa-ed":           { "dynamic": true, "note": "Live scrape — count grows as CISA publishes new EDs; ~18 as of 2026-03-06" },

@@ -42,7 +42,6 @@ DRY_RUN_KEYS: set[str] = {
     "nist-drafts",  # 146 MB
     "disa",  # 350 MB
     "mitre-attack",  # 50–200 MB
-    "fedramp-github",  # 34 MB
 }
 
 # Tier membership — used by --tier flag

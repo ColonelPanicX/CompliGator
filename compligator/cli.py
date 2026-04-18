@@ -258,7 +258,7 @@ def _run_normalize(source_dir: Path, output_dir: Path, services=None, label: str
 # Quick scan
 # ---------------------------------------------------------------------------
 
-QUICK_SCAN_KEYS = ["cisa-kev", "fedramp-github", "owasp-asvs", "cisa-bod"]
+QUICK_SCAN_KEYS = ["cisa-kev", "fedramp", "owasp-asvs", "cisa-bod"]
 
 
 def _run_scan(source_dir: Path, state) -> None:  # type: ignore[type-arg]
