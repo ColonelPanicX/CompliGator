@@ -28,12 +28,16 @@ from .base import (
     REQUEST_TIMEOUT,
     USER_AGENT,
     DownloadResult,
-    download_file,
 )
 
 SOURCE_URL = "https://github.com/GSA/fedramp-automation"
 REPO_API_BASE = "https://api.github.com/repos/GSA/fedramp-automation/contents"
 
+# NOTE: The GSA/fedramp-automation GitHub repository was removed (404 as of 2026-04-16).
+# The FedRAMP OSCAL automation artifacts previously hosted there have not been
+# relocated to a known public URL. These content sets are preserved for reference
+# but will not resolve until a replacement source is identified.
+#
 # (GitHub API path, local subdir under dest, file extensions to include)
 CONTENT_SETS: list[tuple[str, str, set[str]]] = [
     ("dist/content/rev5/baselines/json", "baselines", {".json"}),
@@ -100,41 +104,13 @@ def run(
     force: bool = False,
     state: Optional["StateFile"] = None,
 ) -> DownloadResult:
-    dest = output_dir / "fedramp-github"
     result = DownloadResult(framework="fedramp-github")
-
-    # Discover all files via GitHub API
-    all_links: list[tuple[str, str, str]] = []  # (filename, url, subdir)
-    for api_path, subdir, include_ext in CONTENT_SETS:
-        try:
-            for filename, url in _list_files(api_path, include_ext):
-                all_links.append((filename, url, subdir))
-        except RuntimeError as exc:
-            result.errors.append(("", str(exc)))
-
-    if not all_links:
-        return result
-
-    if dry_run:
-        for filename, _url, subdir in all_links:
-            target = dest / subdir / filename
-            if not force and target.exists() and target.stat().st_size > 0:
-                result.skipped.append(filename)
-            else:
-                result.downloaded.append(filename)
-        return result
-
-    dest.mkdir(parents=True, exist_ok=True)
-    session = requests.Session()
-
-    for filename, url, subdir in all_links:
-        target = dest / subdir / filename
-        ok, msg = download_file(session, url, target, force=force, state=state)
-        if msg == "skipped":
-            result.skipped.append(filename)
-        elif ok:
-            result.downloaded.append(filename)
-        else:
-            result.errors.append((filename, msg))
-
+    # The GSA/fedramp-automation repo was removed as of 2026-04-16. All API
+    # paths return 404. Return a notice rather than hammering the API with
+    # 7 requests that will all fail.
+    result.notices.append(
+        "Source unavailable: GSA/fedramp-automation has been removed from GitHub. "
+        "FedRAMP OSCAL artifacts have not been relocated to a known public URL. "
+        "This framework cannot be synced until a replacement source is identified."
+    )
     return result

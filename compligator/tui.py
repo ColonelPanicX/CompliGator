@@ -46,7 +46,7 @@ _SYNCING = "[yellow]⟳[/yellow]"
 
 _LEGEND = (
     f"{_SYNCED} synced  "
-    f"{_PARTIAL} partial / dynamic  "
+    f"{_PARTIAL} partial  "
     f"{_UNSYNCED} not synced  "
     f"{_MANUAL} manual only"
 )
@@ -234,7 +234,6 @@ class CompliGatorApp(App[None]):
         height: 1;
         padding: 0 1;
         border-top: solid $primary-darken-3;
-        color: $text-muted;
     }
     #activity-log {
         width: 2fr;

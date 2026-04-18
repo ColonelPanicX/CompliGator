@@ -105,11 +105,15 @@ def test_load_bundled_returns_manifest() -> None:
 @pytest.mark.unit
 def test_bundled_manifest_has_known_frameworks() -> None:
     manifest = _load_bundled()
-    # Spot-check a fixed entry and a dynamic entry
+    # Spot-check a few fixed entries
     fixed = manifest.get("nist-privacy")
     assert fixed is not None and not fixed.dynamic and fixed.total == 1
 
-    dynamic = manifest.get("nist-finals")
+    nist_finals = manifest.get("nist-finals")
+    assert nist_finals is not None and not nist_finals.dynamic and nist_finals.total == 669
+
+    # cis-benchmarks is intentionally dynamic (user-supplied files, no fixed list)
+    dynamic = manifest.get("cis-benchmarks")
     assert dynamic is not None and dynamic.dynamic is True
 
 
